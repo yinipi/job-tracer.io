@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- 🚨 OBLIGATOIRE : Les deux librairies externes -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -254,6 +253,7 @@ const STATUTS = [
   {key:'positive',  label:'Réponse positive', color:'var(--green)'},
   {key:'refusee',   label:'Refusée',          color:'var(--clay)'}
 ];
+
 const SEED_DATA = [
   { "id": "lxz1a1", "entreprise": "Schneider Electric", "theme": "Hardware / Conception PCB", "poste": "Stage - Conception et caractérisation d'un PCB", "ville": "Eybens", "date": "2026-10-06", "relance": "2026-10-20", "dateEntretien": "", "statut": "envoyee", "contact": "Équipe Recrutement Innovation", "lien": "https://careers.se.com/jobs/134370", "duree": "5 à 6 mois", "remuneration": "", "missions": "Conception électronique haute vitesse d'un System on Module, modélisation de l'intégrité du signal et caractérisation par mesures labo.", "notes": "Candidature envoyée avec le CV 'Vert'. Forte mise en avant des compétences KiCad et des mesures physiques à l'IRCICA.", "appris": "" },
   { "id": "lxz1b2", "entreprise": "Airbus Defence and Space", "theme": "Automatisation / Spatial", "poste": "Stage - Modèles de test pour calculateurs Satellite", "ville": "Toulouse", "date": "2026-10-06", "relance": "2026-10-20", "dateEntretien": "", "statut": "envoyee", "contact": "", "lien": "https://ag.wd3.myworkdayjobs.com/en-US/Airbus/...JR10440950", "duree": "4 à 6 mois", "remuneration": "", "missions": "Création d'environnements de test pour simuler le comportement du satellite et valider le calculateur embarqué.", "notes": "Focus sur l'automatisation de bancs de test en Python (stage IRCICA) et l'analyse matérielle.", "appris": "" }
@@ -265,40 +265,52 @@ let editingId = null;
 let searchTerm = '';
 let statChart = null;
 
-// --- DÉMARRAGE ROBUSTE : On dessine d'abord l'interface ---
+// --- DÉMARRAGE ROBUSTE ET ANTI-CRASH ---
 function loadDataLocal() {
   try {
     const raw = localStorage.getItem('candidatures');
-    data = raw ? JSON.parse(raw) : SEED_DATA;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Le bouclier magique : si les données sont corrompues, on nettoie et on met les données par défaut
+      if (Array.isArray(parsed)) {
+        data = parsed;
+      } else {
+        localStorage.removeItem('candidatures');
+        data = SEED_DATA;
+      }
+    } else {
+      data = SEED_DATA;
+    }
     goal = parseInt(localStorage.getItem('candidature_goal')) || 20;
   } catch(e) {
+    localStorage.removeItem('candidatures');
     data = SEED_DATA;
   }
-  renderAll(); // <--- L'écran ne sera plus jamais vide grâce à cette ligne
+  renderAll(); // On affiche l'interface immédiatement
 }
 
 // Lancement immédiat
 loadDataLocal();
 
-// --- CONNEXION SUPABASE EN ARRIÈRE-PLAN ---
-// Tu peux remplacer TON_URL_ICI et TA_CLE_API_ICI. 
-// Même si tu te trompes, le site fonctionnera quand même !
-const supabaseUrl = 'vqarxkorwkwfboxmpqpu'; 
+// --- CONNEXION SUPABASE ---
+const supabaseUrl = 'https://vqarxkorwkwfboxmpqpu.supabase.co'; // URL CORRIGÉE
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxYXJ4a29yd2t3ZmJveG1wcXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNDY5NTgsImV4cCI6MjEwNjgyMjk1OH0.me_nSAHzq6RlJivECEU7ui5vDQJw_Cw2f8fm_U6zTus'; 
 let supabase = null;
 
-if (supabaseUrl !== 'TON_URL_ICI' && supabaseKey !== 'TA_CLE_API_ICI') {
+if (supabaseUrl && supabaseKey) {
   try {
     supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
     syncCloud();
-  } catch(e) { console.warn("Supabase désactivé ou erreur d'initialisation."); }
+  } catch(e) { 
+    console.warn("Erreur d'initialisation Supabase.", e); 
+  }
 }
 
 async function syncCloud() {
   if (!supabase) return;
   try {
     const { data: dbData, error } = await supabase.from('candidatures').select('*');
-    if (dbData && !error && dbData.length > 0) {
+    if (dbData && !error && Array.isArray(dbData) && dbData.length > 0) {
       data = dbData;
       persistLocal();
       renderAll(); // Met à jour l'interface avec les données du Cloud
