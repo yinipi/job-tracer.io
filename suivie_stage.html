@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Suivi de candidatures de stage</title>
+  
+  <!-- Polices et Librairies -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+  
+  <!-- Ajout de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Feuille de style externe -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Éléments d'interface globaux -->
+  <div id="celebrate"><div class="msg" id="celebrateMsg"></div></div>
+  <div id="toasts"></div>
+  <div id="confirmModal">
+    <div class="box">
+      <p id="confirmMsg"></p>
+      <div class="btns">
+        <button class="cancel" id="confirmNo">Annuler</button>
+        <button class="yes" id="confirmYes">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- En-tête -->
+  <header>
+    <div class="title-row">
+      <h1 class="serif">Suivi de <span>candidatures</span></h1>
+      <div class="header-actions">
+        <label class="btn btn-secondary">
+          📂 Importer JSON
+          <input type="file" id="importFile" accept=".json" style="display:none;">
+        </label>
+        <button class="btn btn-secondary" id="exportBtn">💾 Sauvegarder</button>
+        <button class="btn" id="openForm">+ Nouvelle candidature</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap"><input id="searchInput" placeholder="Rechercher une entreprise, un thème, une ville..."></div>
+      <button class="theme-toggle" id="themeToggle" title="Basculer le thème">🌙</button>
+    </div>
+    <div class="stat-row" id="statRow"></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="board">Tableau</button>
+      <button class="tab" data-tab="calendar">Calendrier</button>
+      <button class="tab" data-tab="stats">Statistiques</button>
+      <button class="tab" data-tab="compare">Comparatif offres</button>
+      <button class="tab" data-tab="cities">Par ville</button>
+    </div>
+  </header>
+
+  <!-- Formulaire d'édition/ajout -->
+  <div id="form">
+    <div class="grid">
+      <div><label>Entreprise</label><input id="f-entreprise" placeholder="Ex. Thales"></div>
+      <div><label>Thème / intitulé</label><input id="f-theme" placeholder="Ex. Conception FPGA"></div>
+      <div><label>Poste</label><input id="f-poste" placeholder="Ex. Stage ingénieur M2"></div>
+      <div><label>Ville</label><input id="f-ville" placeholder="Ex. Toulouse"></div>
+      <div><label>Date d'envoi</label><input id="f-date" type="date"></div>
+      <div><label>Date de relance ⏰</label><input id="f-relance" type="date"></div>
+      <div><label>Date d'entretien</label><input id="f-dateEntretien" type="date"></div>
+      <div><label>Statut</label>
+        <select id="f-statut">
+          <option value="a-envoyer">À envoyer</option>
+          <option value="envoyee" selected>Envoyée</option>
+          <option value="entretien">Entretien</option>
+          <option value="positive">Réponse positive</option>
+          <option value="refusee">Refusée</option>
+        </select>
+      </div>
+      <div><label>Contact (RH/Manager)</label><input id="f-contact" placeholder="Nom, email..."></div>
+      <div><label>Lien annonce</label><input id="f-lien" placeholder="https://..."></div>
+      <div><label>Durée</label><input id="f-duree" placeholder="Ex. 6 mois"></div>
+      <div><label>Rémunération</label><input id="f-remuneration" placeholder="Ex. 1200€/mois"></div>
+      <div style="grid-column:1/-1"><label>Missions</label><textarea id="f-missions" placeholder="Résumé des missions proposées"></textarea></div>
+      <div style="grid-column:1/-1"><label>Notes & Retours d'entretiens</label><textarea id="f-notes" placeholder="Impressions, questions posées..."></textarea></div>
+      <div style="grid-column:1/-1"><label>Ce que j'ai appris</label><textarea id="f-appris" placeholder="À retenir pour la suite, même en cas de refus"></textarea></div>
+    </div>
+    <div class="formrow-actions">
+      <button class="save" id="saveBtn">Enregistrer</button>
+      <button class="cancel" id="cancelBtn">Annuler</button>
+    </div>
+  </div>
+
+  <!-- Conteneur principal (Onglets) -->
+  <main>
+    <div class="panel active" id="board-panel"><div class="board" id="board"></div></div>
+    <div class="panel" id="calendar-panel"></div>
+    <div class="panel" id="stats-panel"></div>
+    <div class="panel" id="compare-panel"></div>
+    <div class="panel" id="cities-panel"></div>
+  </main>
+
+  <!-- Script externe -->
+  <script src="app.js"></script>
+</body>
+</html>
