@@ -457,5 +457,88 @@ document.addEventListener('keydown', e=>{
   else if((e.key==='n' || e.key==='N') && !typing){ resetForm(); document.getElementById('form').classList.add('open'); document.getElementById('f-entreprise').focus(); }
 });
 
+// --- FORMULAIRE & ACTIONS ---
+function resetForm() {
+  editingId = null;
+  ['f-entreprise','f-theme','f-poste','f-ville','f-date','f-relance','f-dateEntretien','f-contact','f-lien','f-duree','f-remuneration','f-missions','f-notes','f-appris']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-statut').value='envoyee';
+}
+
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab+'-panel').classList.add('active');
+  });
+});
+
+document.getElementById('openForm').addEventListener('click', ()=>{ resetForm(); document.getElementById('form').classList.toggle('open'); });
+document.getElementById('cancelBtn').addEventListener('click', ()=>{ document.getElementById('form').classList.remove('open'); resetForm(); });
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const entreprise = document.getElementById('f-entreprise').value.trim();
+  if(!entreprise){ toast("Indique au moins le nom de l'entreprise."); return; }
+  
+  const formData = {
+    entreprise, theme: document.getElementById('f-theme').value.trim(), poste: document.getElementById('f-poste').value.trim(),
+    ville: document.getElementById('f-ville').value.trim(), date: document.getElementById('f-date').value,
+    relance: document.getElementById('f-relance').value, dateEntretien: document.getElementById('f-dateEntretien').value,
+    statut: document.getElementById('f-statut').value, contact: document.getElementById('f-contact').value.trim(),
+    lien: document.getElementById('f-lien').value.trim(), duree: document.getElementById('f-duree').value.trim(),
+    remuneration: document.getElementById('f-remuneration').value.trim(), missions: document.getElementById('f-missions').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(), appris: document.getElementById('f-appris').value.trim()
+  };
+
+  if(editingId) {
+    const index = data.findIndex(d => d.id === editingId);
+    if(index !== -1) {
+      const wasPositive = data[index].statut === 'positive';
+      data[index] = { ...data[index], ...formData };
+      if(!wasPositive && data[index].statut === 'positive') celebrate(entreprise);
+    }
+  } else {
+    data.push({ id: Date.now().toString(36), ...formData });
+    if(formData.statut === 'positive') celebrate(entreprise);
+  }
+  
+  persist(); resetForm(); document.getElementById('form').classList.remove('open'); renderAll();
+});
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  if(data.length === 0) { toast("Aucune donnée à sauvegarder."); return; }
+  const dataStr = JSON.stringify(data, null, 2);
+  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', 'suivi_candidatures_stage.json');
+  linkElement.click();
+  toast("Fichier téléchargé ✓");
+});
+
+document.getElementById('importFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const importedData = JSON.parse(e.target.result);
+      if(Array.isArray(importedData)) {
+        showConfirm("Remplacer vos données actuelles par celles du fichier importé ?", ()=>{
+          data = importedData; persist(); renderAll(); toast("Importation réussie et synchronisée avec le Cloud !");
+        });
+      } else { toast("Le format du fichier n'est pas valide."); }
+    } catch(err) { toast("Erreur lors de la lecture du fichier JSON."); }
+  };
+  reader.readAsText(file); this.value = '';
+});
+
+document.addEventListener('keydown', e=>{
+  const typing = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+  if(e.key==='Escape'){ document.getElementById('form').classList.remove('open'); document.getElementById('confirmModal').classList.remove('show'); } 
+  else if((e.key==='n' || e.key==='N') && !typing){ resetForm(); document.getElementById('form').classList.add('open'); document.getElementById('f-entreprise').focus(); }
+});
+
 
 
