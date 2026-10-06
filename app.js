@@ -1,6 +1,6 @@
 // --- 1. CONNEXION SUPABASE ---
-const supabaseUrl = 'https://vqarxkorwkwfboxmpqpu.supabase.co'; // Remplacer par ton URL projet
-const supabaseKey = 'sb_publishable_dd4QpCV83gmSVstEDB0cWA_duZwMDez'; // Remplacer par ta clé anon/public
+const supabaseUrl = 'vqarxkorwkwfboxmpqpu'; // Remplacer par ton URL projet
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxYXJ4a29yd2t3ZmJveG1wcXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNDY5NTgsImV4cCI6MjEwNjgyMjk1OH0.me_nSAHzq6RlJivECEU7ui5vDQJw_Cw2f8fm_U6zTus'; // Remplacer par ta clé anon/public
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const STATUTS = [
