@@ -456,3 +456,6 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){ document.getElementById('form').classList.remove('open'); document.getElementById('confirmModal').classList.remove('show'); } 
   else if((e.key==='n' || e.key==='N') && !typing){ resetForm(); document.getElementById('form').classList.add('open'); document.getElementById('f-entreprise').focus(); }
 });
+
+
+
